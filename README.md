@@ -19,17 +19,13 @@ PAL_AI_Demo/
 
 ## 🚀 Quick Setup Instructions
 
-### 1. Navigate to Project Directory
-```bash
-cd /Users/hamza/PycharmProjects/PAL_AI_Demo
-```
 
-### 2. Create Virtual Environment
+Create Virtual Environment
 ```bash
 python3 -m venv venv
 ```
 
-### 3. Activate Virtual Environment
+Activate Virtual Environment
 **Mac/Linux:**
 ```bash
 source venv/bin/activate
@@ -120,8 +116,4 @@ The `sample_data/` directory contains realistic PAL files with common data quali
 4. **Highlight automation**: Focus on reduced manual work
 5. **End with vision**: Connect to RPAG's growth strategy
 
-## 🚀 Ready for Conference!
 
-This demo is perfectly timed for a 30-minute presentation and flows seamlessly after the CTO/Product presentation. The interactive nature keeps the audience engaged while showcasing RPAG's innovative approach to PAL processing.
-
-**Powering Your Growth Through Innovation** 🚀
