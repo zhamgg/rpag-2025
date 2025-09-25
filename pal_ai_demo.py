@@ -11,8 +11,8 @@ import json
 
 # Configure page
 st.set_page_config(
-    page_title="Data, AI, and PAL - Now and Future at RPAG",
-    page_icon="🚀",
+    page_title="Data, AI, and PAL - Now and Future",
+    page_icon="",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -62,8 +62,8 @@ st.markdown("""
 # Title with RPAG branding
 st.markdown("""
 <div class="main-header">
-    <h1>🚀 Data, AI, and PAL</h1>
-    <h2>Now and in The Future at RPAG</h2>
+    <h1>Data, AI, and PAL</h1>
+    <h2>Now and in The Future</h2>
     <p style="font-size: 1.2em; opacity: 0.9;">Powering Your Growth Through Innovation</p>
 </div>
 """, unsafe_allow_html=True)
@@ -76,14 +76,14 @@ if 'uploaded_data' not in st.session_state:
 
 # Demo navigation
 demo_stages = {
-    'intro': "📊 The Challenge: Current PAL Pain Points",
-    'pre_ingestion': "🤖 AI-Powered Pre-Ingestion Intelligence",
-    'post_ingestion': "⚡ Process Automation: Post-Ingestion",
-    'future': "🌟 Building Your Data Backbone"
+    'intro': "The Challenge: Current PAL Pain Points",
+    'pre_ingestion': "AI-Powered Pre-Ingestion Intelligence",
+    'post_ingestion': "Process Automation: Post-Ingestion",
+    'future': "Building Your Data Backbone"
 }
 
 # Sidebar navigation
-st.sidebar.title("Demo Navigation")
+st.sidebar.title("Navigation")
 selected_stage = st.sidebar.radio(
     "Choose Demo Section:",
     list(demo_stages.keys()),
@@ -181,7 +181,7 @@ def generate_fund_mapping_data():
 if st.session_state.demo_stage == 'intro':
     st.markdown("""
     <div class="pain-point-card">
-        <h2>🎯 The Automation Advocates' Challenge</h2>
+        <h2>The Automation Advocates' Challenge</h2>
         <p><em>"We allocate multiple hours to get through our quarterly data."</em></p>
         <p>- RPAG Member Survey Response</p>
     </div>
@@ -190,10 +190,11 @@ if st.session_state.demo_stage == 'intro':
     # Load mock data
     pal_data = generate_mock_pal_data()
 
+    # Create a 2x2 grid layout for the 4 graphs
     col1, col2 = st.columns(2)
 
     with col1:
-        st.subheader("📈 Current PAL Processing Reality")
+        st.subheader("Current PAL Processing Reality")
 
         # Key metrics
         total_templates = len(pal_data['template_type'].unique()) * 50  # Simulate 400+ templates
@@ -204,6 +205,20 @@ if st.session_state.demo_stage == 'intro':
         st.metric("Avg Processing Time", f"{avg_processing_time:.1f} hours")
         st.metric("Data Quality Issues", f"{low_quality_pct:.0f}%")
 
+    with col2:
+        st.subheader("Top Data Pain Points")
+
+        # Issue frequency analysis
+        all_issues = []
+        for issues in pal_data['issues']:
+            all_issues.extend(issues)
+
+        issue_counts = pd.Series(all_issues).value_counts()
+
+    # Create the 4 graphs in a 2x2 grid
+    col1, col2 = st.columns(2)
+    
+    with col1:
         # Processing time distribution
         fig_time = px.histogram(
             pal_data,
@@ -217,16 +232,7 @@ if st.session_state.demo_stage == 'intro':
         )
         st.plotly_chart(fig_time, use_container_width=True)
 
-    with col2:
-        st.subheader("🚨 Top Data Pain Points")
-
-        # Issue frequency analysis
-        all_issues = []
-        for issues in pal_data['issues']:
-            all_issues.extend(issues)
-
-        issue_counts = pd.Series(all_issues).value_counts()
-
+        # Issue frequency chart
         fig_issues = px.bar(
             x=issue_counts.values,
             y=issue_counts.index,
@@ -240,6 +246,7 @@ if st.session_state.demo_stage == 'intro':
         )
         st.plotly_chart(fig_issues, use_container_width=True)
 
+    with col2:
         # Data quality by provider
         quality_by_provider = pal_data.groupby('provider')['data_quality_score'].mean().sort_values()
 
@@ -256,8 +263,22 @@ if st.session_state.demo_stage == 'intro':
         )
         st.plotly_chart(fig_quality, use_container_width=True)
 
+        # Add a fourth chart for balance - data quality distribution
+        fig_quality_dist = px.histogram(
+            pal_data,
+            x='data_quality_score',
+            title="Data Quality Score Distribution",
+            color_discrete_sequence=['#26C6DA'],
+            nbins=20
+        )
+        fig_quality_dist.update_layout(
+            xaxis_title="Quality Score",
+            yaxis_title="Number of Plans"
+        )
+        st.plotly_chart(fig_quality_dist, use_container_width=True)
+
     # Show sample problematic data
-    st.subheader("📋 Sample Problematic PAL Data")
+    st.subheader("Sample Problematic PAL Data")
 
     # Filter to show problematic records
     problematic_data = pal_data[pal_data['data_quality_score'] < 70].head(10)
@@ -270,135 +291,273 @@ if st.session_state.demo_stage == 'intro':
 elif st.session_state.demo_stage == 'pre_ingestion':
     st.markdown("""
     <div class="solution-card">
-        <h2>🤖 AI-Powered Pre-Ingestion Intelligence</h2>
+        <h2>AI-Powered Pre-Ingestion Intelligence</h2>
         <p>Transform 400+ chaotic templates into clean, standardized data</p>
     </div>
     """, unsafe_allow_html=True)
 
-    # File upload simulation
-    st.subheader("📤 Live PAL File Processing Demo")
+    # API Migration Focus
+    st.subheader("The Future of Data Ingestion: From Files to APIs")
 
     col1, col2 = st.columns([1, 2])
 
     with col1:
-        # Simulate file upload
-        uploaded_files = st.file_uploader(
-            "Drop your PAL files here",
-            accept_multiple_files=True,
-            type=['csv', 'xlsx', 'xml', 'txt'],
-            help="Upload sample PAL files to see AI processing in action"
+        st.markdown("""
+        <div class="metric-card">
+            <h4>Current State: File-Based Processing</h4>
+            <ul>
+                <li>Manual file uploads</li>
+                <li>Batch processing delays</li>
+                <li>Format inconsistencies</li>
+                <li>Error-prone transfers</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("""
+        <div class="solution-card" style="margin-top: 1rem;">
+            <h4>Future State: Real-Time API Integration</h4>
+            <ul>
+                <li>Instant data synchronization</li>
+                <li>Real-time updates</li>
+                <li>Standardized data formats</li>
+                <li>Automated error handling</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # API connection simulation
+        st.markdown("#### API Connection Status")
+        
+        api_status = st.selectbox(
+            "Select Provider API Status:",
+            ["Fidelity API v2.1", "Vanguard REST API v3.4", "T. Rowe Price GraphQL v1.8", "Legacy File Upload"],
+            help="Choose a provider to see their API integration status"
         )
+        
+        if "Legacy File Upload" in api_status:
+            st.error("⚠️ File-based processing - Consider API migration")
+        else:
+            st.success("✅ API-enabled - Real-time data available")
 
-        if not uploaded_files:
-            st.info("👆 Upload files or click 'Demo Mode' to see AI in action")
+        demo_mode = st.button("Simulate API Data Flow", type="primary")
 
-        demo_mode = st.button("🚀 Demo Mode: Process Sample Files", type="primary")
-
-        if demo_mode or uploaded_files:
-            # Simulate AI processing
-            with st.spinner("🤖 AI Processing Pipeline Running..."):
+        if demo_mode:
+            # Simulate API-based processing
+            with st.spinner("API Data Synchronization Running..."):
                 progress_bar = st.progress(0)
                 status_text = st.empty()
 
-                steps = [
-                    "📄 Detecting file format...",
-                    "🔍 Analyzing template structure...",
-                    "🧠 AI template matching (400+ templates)...",
-                    "✨ Smart field mapping...",
-                    "🔧 Data standardization...",
-                    "✅ Quality validation...",
-                    "📊 Generating insights..."
-                ]
+                if "Legacy File Upload" in api_status:
+                    steps = [
+                        "Uploading files to server...",
+                        "Detecting file format...",
+                        "Analyzing template structure...",
+                        "AI template matching (400+ templates)...",
+                        "Smart field mapping...",
+                        "Data standardization...",
+                        "Quality validation...",
+                        "Generating insights..."
+                    ]
+                else:
+                    steps = [
+                        "Establishing API connection...",
+                        "Authenticating with provider...",
+                        "Fetching real-time data...",
+                        "Validating data schema...",
+                        "Applying AI transformations...",
+                        "Synchronizing with master database...",
+                        "Generating live insights..."
+                    ]
 
                 for i, step in enumerate(steps):
                     status_text.text(step)
                     progress_bar.progress((i + 1) / len(steps))
                     time.sleep(0.8)
 
-                st.success("✅ AI Processing Complete!")
+                if "Legacy File Upload" in api_status:
+                    st.success("File Processing Complete!")
+                else:
+                    st.success("API Synchronization Complete!")
 
     with col2:
-        if demo_mode or uploaded_files or st.session_state.get('ai_processed'):
+        if demo_mode or st.session_state.get('ai_processed'):
             st.session_state.ai_processed = True
 
-            # AI Processing Results
-            st.subheader("🎯 AI Processing Results")
+            # API vs File Processing Results
+            st.subheader("API vs File Processing Results")
 
-            # Metrics
+            # Metrics comparison
             col_a, col_b, col_c, col_d = st.columns(4)
 
-            with col_a:
-                st.metric("Template Match", "98.5%", "↑12%")
-            with col_b:
-                st.metric("Processing Time", "12 min", "↓85%")
-            with col_c:
-                st.metric("Data Quality", "94.2%", "↑28%")
-            with col_d:
-                st.metric("Auto-Resolved", "156/187", "↑91%")
+            if "Legacy File Upload" in api_status:
+                with col_a:
+                    st.metric("Data Freshness", "24-48 hours", "Batch delay")
+                with col_b:
+                    st.metric("Processing Time", "12 min", "Per file")
+                with col_c:
+                    st.metric("Error Rate", "8.2%", "Manual fixes")
+                with col_d:
+                    st.metric("Sync Frequency", "Daily", "Scheduled")
+            else:
+                with col_a:
+                    st.metric("Data Freshness", "Real-time", "Live updates")
+                with col_b:
+                    st.metric("Processing Time", "2 min", "Per sync")
+                with col_c:
+                    st.metric("Error Rate", "1.1%", "Auto-resolved")
+                with col_d:
+                    st.metric("Sync Frequency", "Continuous", "On-demand")
 
-            # Template detection results
-            st.subheader("🔍 Smart Template Detection")
+            # Data source results
+            if "Legacy File Upload" in api_status:
+                st.subheader("File Processing Analysis")
+                template_results = pd.DataFrame({
+                    'File': ['Fidelity_Q3_2024.csv', 'Vanguard_Sept.xlsx', 'TRP_Quarterly.xml'],
+                    'Detected Template': ['Fidelity Standard v2.1', 'Vanguard Institutional v3.4', 'T.Rowe Price XML v1.8'],
+                    'Confidence': [99.2, 97.8, 94.1],
+                    'Issues Found': [2, 5, 12],
+                    'Auto-Fixed': [2, 4, 10]
+                })
+            else:
+                st.subheader("API Data Integration")
+                template_results = pd.DataFrame({
+                    'Provider': ['Fidelity API v2.1', 'Vanguard REST API v3.4', 'T.Rowe Price GraphQL v1.8'],
+                    'Data Schema': ['Standardized JSON', 'RESTful JSON', 'GraphQL Schema'],
+                    'Sync Status': ['Live', 'Live', 'Live'],
+                    'Last Update': ['2 min ago', '30 sec ago', '1 min ago'],
+                    'Data Quality': [99.8, 99.5, 99.2]
+                })
 
-            template_results = pd.DataFrame({
-                'File': ['Fidelity_Q3_2024.csv', 'Vanguard_Sept.xlsx', 'TRP_Quarterly.xml'],
-                'Detected Template': ['Fidelity Standard v2.1', 'Vanguard Institutional v3.4', 'T.Rowe Price XML v1.8'],
-                'Confidence': [99.2, 97.8, 94.1],
-                'Issues Found': [2, 5, 12],
-                'Auto-Fixed': [2, 4, 10]
-            })
+            # Color code based on mode
+            if "Legacy File Upload" in api_status:
+                def color_confidence(val):
+                    if val > 95:
+                        return 'background-color: #d4edda'
+                    elif val > 85:
+                        return 'background-color: #fff3cd'
+                    else:
+                        return 'background-color: #f8d7da'
 
-            # Color code by confidence
-            def color_confidence(val):
-                if val > 95:
-                    return 'background-color: #d4edda'
-                elif val > 85:
-                    return 'background-color: #fff3cd'
-                else:
-                    return 'background-color: #f8d7da'
+                st.dataframe(
+                    template_results.style.applymap(color_confidence, subset=['Confidence']),
+                    use_container_width=True
+                )
+            else:
+                def color_status(val):
+                    if val == 'Live':
+                        return 'background-color: #d4edda'
+                    else:
+                        return 'background-color: #f8d7da'
 
-            st.dataframe(
-                template_results.style.applymap(color_confidence, subset=['Confidence']),
-                use_container_width=True
-            )
+                st.dataframe(
+                    template_results.style.applymap(color_status, subset=['Sync Status']),
+                    use_container_width=True
+                )
 
-            # Field mapping visualization
-            st.subheader("🗺️ AI Field Mapping")
-
-            mapping_data = {
-                'PAL Field': ['CONT_NUM', 'PLN_NM', 'AST_VAL', 'PARTIC_CNT', 'DT_ASOF'],
-                'Standard Field': ['Contract_Number', 'Plan_Name', 'Asset_Value', 'Participant_Count', 'As_Of_Date'],
-                'Confidence': [99.8, 94.2, 99.9, 98.1, 87.3],
-                'Transformation': ['Direct Map', 'Text Clean', 'Currency Parse', 'Number Parse', 'Date Standard']
-            }
+            # Data transformation visualization
+            if "Legacy File Upload" in api_status:
+                st.subheader("File-Based Field Mapping")
+                mapping_data = {
+                    'PAL Field': ['CONT_NUM', 'PLN_NM', 'AST_VAL', 'PARTIC_CNT', 'DT_ASOF'],
+                    'Standard Field': ['Contract_Number', 'Plan_Name', 'Asset_Value', 'Participant_Count', 'As_Of_Date'],
+                    'Confidence': [99.8, 94.2, 99.9, 98.1, 87.3],
+                    'Transformation': ['Direct Map', 'Text Clean', 'Currency Parse', 'Number Parse', 'Date Standard']
+                }
+            else:
+                st.subheader("API Data Standardization")
+                mapping_data = {
+                    'API Field': ['contractNumber', 'planName', 'assetValue', 'participantCount', 'asOfDate'],
+                    'Standard Field': ['Contract_Number', 'Plan_Name', 'Asset_Value', 'Participant_Count', 'As_Of_Date'],
+                    'Mapping Type': ['Direct', 'Direct', 'Direct', 'Direct', 'Direct'],
+                    'Validation': ['Schema Validated', 'Schema Validated', 'Schema Validated', 'Schema Validated', 'Schema Validated']
+                }
 
             mapping_df = pd.DataFrame(mapping_data)
 
-            fig_mapping = px.bar(
-                mapping_df,
-                x='PAL Field',
-                y='Confidence',
-                color='Confidence',
-                title="AI Field Mapping Confidence Scores",
-                color_continuous_scale=['#FF7043', '#4DD0E1', '#26C6DA']
-            )
-            fig_mapping.update_layout(yaxis_title="Confidence %")
+            if "Legacy File Upload" in api_status:
+                fig_mapping = px.bar(
+                    mapping_df,
+                    x='PAL Field',
+                    y='Confidence',
+                    color='Confidence',
+                    title="File-Based Field Mapping Confidence Scores",
+                    color_continuous_scale=['#FF7043', '#4DD0E1', '#26C6DA']
+                )
+                fig_mapping.update_layout(yaxis_title="Confidence %")
+            else:
+                fig_mapping = px.bar(
+                    mapping_df,
+                    x='API Field',
+                    y=[100, 100, 100, 100, 100],  # API fields have 100% reliability
+                    color=[100, 100, 100, 100, 100],
+                    title="API Data Standardization Reliability",
+                    color_continuous_scale=['#4DD0E1', '#26C6DA', '#1E3A8A']
+                )
+                fig_mapping.update_layout(yaxis_title="Reliability %")
+            
             st.plotly_chart(fig_mapping, use_container_width=True)
+
+            # API Migration Benefits Summary
+            st.markdown("---")
+            st.subheader("Why Move to APIs?")
+            
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                st.markdown("""
+                <div class="metric-card">
+                    <h4>Immediate Benefits</h4>
+                    <ul>
+                        <li>Real-time data access</li>
+                        <li>Eliminate file transfers</li>
+                        <li>Reduce manual errors</li>
+                        <li>Faster processing</li>
+                    </ul>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col2:
+                st.markdown("""
+                <div class="metric-card">
+                    <h4>Operational Impact</h4>
+                    <ul>
+                        <li>85% reduction in processing time</li>
+                        <li>99% data accuracy</li>
+                        <li>24/7 data availability</li>
+                        <li>Automated error handling</li>
+                    </ul>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col3:
+                st.markdown("""
+                <div class="metric-card">
+                    <h4>Strategic Value</h4>
+                    <ul>
+                        <li>Enhanced client experience</li>
+                        <li>Competitive advantage</li>
+                        <li>Scalable architecture</li>
+                        <li>Future-proof solution</li>
+                    </ul>
+                </div>
+                """, unsafe_allow_html=True)
 
 elif st.session_state.demo_stage == 'post_ingestion':
     st.markdown("""
     <div class="solution-card">
-        <h2>⚡ Process Automation: Post-Ingestion</h2>
+        <h2>Process Automation: Post-Ingestion</h2>
         <p>Intelligent workflows that minimize manual intervention</p>
     </div>
     """, unsafe_allow_html=True)
 
     # Plan matching demo
-    st.subheader("🎯 AI-Powered Plan Matching")
+    st.subheader("AI-Powered Plan Matching")
 
     col1, col2 = st.columns(2)
 
     with col1:
-        st.markdown("#### 📋 Incoming PAL Plans")
+        st.markdown("#### Incoming PAL Plans")
 
         incoming_plans = pd.DataFrame({
             'Contract_Number': ['CNT-45289', '', 'CNT-78934', 'CNT-12456'],
@@ -409,13 +568,13 @@ elif st.session_state.demo_stage == 'post_ingestion':
 
         st.dataframe(incoming_plans, use_container_width=True)
 
-        if st.button("🚀 Run AI Matching", type="primary"):
-            with st.spinner("🤖 AI analyzing plan relationships..."):
+        if st.button("Run AI Matching", type="primary"):
+            with st.spinner("AI analyzing plan relationships..."):
                 time.sleep(2)
-                st.success("✅ Matching complete!")
+                st.success("Matching complete!")
 
     with col2:
-        st.markdown("#### 🎯 AI Matching Results")
+        st.markdown("#### AI Matching Results")
 
         if st.session_state.get('matching_complete'):
             matching_results = pd.DataFrame({
@@ -439,10 +598,10 @@ elif st.session_state.demo_stage == 'post_ingestion':
                 use_container_width=True
             )
         else:
-            st.info("👆 Run AI matching to see results")
+            st.info("Run AI matching to see results")
 
     # Fund Association Intelligence
-    st.subheader("💰 Smart Fund Association")
+    st.subheader("Smart Fund Association")
 
     fund_data = generate_fund_mapping_data()
 
@@ -469,7 +628,7 @@ elif st.session_state.demo_stage == 'post_ingestion':
 
     with col2:
         # Show funds requiring review
-        st.markdown("#### 🔍 Funds Requiring Review")
+        st.markdown("#### Funds Requiring Review")
 
         review_funds = fund_data[fund_data['requires_review']].head(8)
 
@@ -478,17 +637,17 @@ elif st.session_state.demo_stage == 'post_ingestion':
             use_container_width=True
         )
 
-        st.info(f"💡 AI reduced manual review from {len(fund_data)} to {len(review_funds)} funds ({len(review_funds)/len(fund_data)*100:.0f}% reduction)")
+        st.info(f"AI reduced manual review from {len(fund_data)} to {len(review_funds)} funds ({len(review_funds)/len(fund_data)*100:.0f}% reduction)")
 
     # Exception handling with AI insights
-    st.subheader("🚨 Intelligent Exception Handling")
+    st.subheader("Intelligent Exception Handling")
 
     col1, col2, col3 = st.columns(3)
 
     with col1:
         st.markdown("""
         <div class="metric-card">
-            <h4>🔍 Anomaly Detection</h4>
+            <h4>Anomaly Detection</h4>
             <p>AI identified 3 unusual asset movements requiring attention</p>
             <ul>
                 <li>Plan ABC: 45% asset increase</li>
@@ -501,7 +660,7 @@ elif st.session_state.demo_stage == 'post_ingestion':
     with col2:
         st.markdown("""
         <div class="metric-card">
-            <h4>🎯 Predictive Insights</h4>
+            <h4>Predictive Insights</h4>
             <p>Based on historical patterns:</p>
             <ul>
                 <li>Plan GHI: Likely fee structure change</li>
@@ -514,7 +673,7 @@ elif st.session_state.demo_stage == 'post_ingestion':
     with col3:
         st.markdown("""
         <div class="metric-card">
-            <h4>⚡ Auto-Resolution</h4>
+            <h4>Auto-Resolution</h4>
             <p>AI automatically handled:</p>
             <ul>
                 <li>12 minor data formatting issues</li>
@@ -527,18 +686,18 @@ elif st.session_state.demo_stage == 'post_ingestion':
 else:  # future stage
     st.markdown("""
     <div class="solution-card">
-        <h2>🌟 Building Your Data Backbone</h2>
+        <h2>Building Your Data Backbone</h2>
         <p>The Future of PAL Processing at RPAG</p>
     </div>
     """, unsafe_allow_html=True)
 
     # ROI Comparison
-    st.subheader("📊 The Transformation: Before vs After AI")
+    st.subheader("The Transformation: Before vs After AI")
 
     col1, col2 = st.columns(2)
 
     with col1:
-        st.markdown("#### 📈 Current State (Manual Process)")
+        st.markdown("#### Current State (Manual Process)")
 
         current_metrics = {
             'Processing Time': '6.5 hours avg',
@@ -552,21 +711,21 @@ else:  # future stage
             st.markdown(f"**{metric}:** {value}")
 
     with col2:
-        st.markdown("#### 🚀 AI-Powered Future")
+        st.markdown("#### AI-Powered Future")
 
         future_metrics = {
-            'Processing Time': '15 minutes avg ⚡',
-            'Data Quality Score': '94% ✨',
-            'Manual Review Required': '12% 🎯',
-            'Exception Resolution': '5 minutes avg ⚡',
-            'Quarterly Processing': '2 hours 🚀'
+            'Processing Time': '15 minutes avg',
+            'Data Quality Score': '94%',
+            'Manual Review Required': '12%',
+            'Exception Resolution': '5 minutes avg',
+            'Quarterly Processing': '2 hours'
         }
 
         for metric, value in future_metrics.items():
             st.markdown(f"**{metric}:** {value}")
 
     # Visual impact
-    st.subheader("🎯 Impact Visualization")
+    st.subheader("Impact Visualization")
 
     # Time savings chart
     categories = ['Data Processing', 'Plan Matching', 'Fund Mapping', 'Exception Handling', 'Quality Review']
@@ -599,7 +758,7 @@ else:  # future stage
     st.plotly_chart(fig, use_container_width=True)
 
     # Future roadmap
-    st.subheader("🗺️ AI Implementation Roadmap")
+    st.subheader("AI Implementation Roadmap")
 
     roadmap_data = {
         'Phase': ['Phase 1: Template Intelligence', 'Phase 2: Smart Matching', 'Phase 3: Predictive Analytics', 'Phase 4: Full Automation'],
@@ -619,7 +778,7 @@ else:  # future stage
     # Call to action
     st.markdown("""
     <div class="solution-card">
-        <h3>🚀 The Power to GROW</h3>
+        <h3>The Power to GROW</h3>
         <p style="font-size: 1.1em;">
         From <strong>hours to minutes</strong>. From <strong>manual to intelligent</strong>.
         From <strong>reactive to predictive</strong>.
@@ -632,7 +791,7 @@ else:  # future stage
     """, unsafe_allow_html=True)
 
     # Final metrics summary
-    st.subheader("📈 Summary: Empowering the Automation Advocates")
+    st.subheader("Summary: Empowering the Automation Advocates")
 
     col1, col2, col3, col4 = st.columns(4)
 
@@ -649,21 +808,5 @@ else:  # future stage
 st.markdown("---")
 col1, col2, col3 = st.columns([1, 2, 1])
 
-with col1:
-    if st.button("⏮️ Previous", disabled=(selected_stage == 'intro')):
-        stages_list = list(demo_stages.keys())
-        current_idx = stages_list.index(selected_stage)
-        if current_idx > 0:
-            st.session_state.demo_stage = stages_list[current_idx - 1]
-            st.experimental_rerun()
-
 with col2:
     st.markdown(f"<center><strong>{demo_stages[selected_stage]}</strong></center>", unsafe_allow_html=True)
-
-with col3:
-    if st.button("Next ⏭️", disabled=(selected_stage == 'future')):
-        stages_list = list(demo_stages.keys())
-        current_idx = stages_list.index(selected_stage)
-        if current_idx < len(stages_list) - 1:
-            st.session_state.demo_stage = stages_list[current_idx + 1]
-            st.experimental_rerun()
