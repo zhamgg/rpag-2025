@@ -1,0 +1,6 @@
+Contract_Number,Plan_Name,Client_Name,Asset_Value,Participant_Count,As_Of_Date,Fund_Name,Fund_Value
+CNT-45289,ABC Corp 401K Plan,ABC Corporation,2500000,1250,2024-09-30,American Funds Growth Fund,1250000
+,XYZ Company Retirement,XYZ Company LLC,890000,445,2024-09-30,Vanguard Growth Index,445000
+CNT-78934,DEF Inc 401(k) Plan,DEF Industries,5200000,2600,2024-09-30,T Rowe Price Growth Stock,2600000
+CNT-12456,GHI Corp Plan,GHI Corp,1800000,900,2024-09-30,Fidelity Growth Company,900000
+CNT-98765,JKL Retirement Plan,JKL Corporation,3200000,1600,2024-09-30,BlackRock Growth Fund,1600000

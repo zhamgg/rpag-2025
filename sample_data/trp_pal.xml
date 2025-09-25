@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PlanData>
+  <Header>
+    <Provider>T. Rowe Price</Provider>
+    <TemplateVersion>1.8</TemplateVersion>
+    <GeneratedDate>2024-09-30</GeneratedDate>
+  </Header>
+  <Plan>
+    <ContractNumber>CNT-12456</ContractNumber>
+    <PlanName>GHI Corp Plan</PlanName>
+    <ClientName>GHI Corp</ClientName>
+    <TotalAssets>1800000</TotalAssets>
+    <ParticipantCount>900</ParticipantCount>
+    <AsOfDate>2024-09-30</AsOfDate>
+  </Plan>
+  <Funds>
+    <Fund>
+      <Name>Fidelity Growth Company</Name>
+      <Value>900000</Value>
+      <Ticker>FDGRX</Ticker>
+      <ExpenseRatio>0.52</ExpenseRatio>
+    </Fund>
+  </Funds>
+</PlanData>
