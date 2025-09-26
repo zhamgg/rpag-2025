@@ -181,8 +181,8 @@ def generate_fund_mapping_data():
 if st.session_state.demo_stage == 'intro':
     st.markdown("""
     <div class="pain-point-card">
-        <h2>The Automation Advocates' Challenge</h2>
-        <p><em>"We allocate multiple hours to get through our quarterly data."</em></p>
+        <h2>The Real PAL Challenges</h2>
+        <p><em>"We allocate multiple hours to get through our quarterly data, and that's just the beginning..."</em></p>
         <p>- RPAG Member Survey Response</p>
     </div>
     """, unsafe_allow_html=True)
@@ -206,14 +206,29 @@ if st.session_state.demo_stage == 'intro':
         st.metric("Data Quality Issues", f"{low_quality_pct:.0f}%")
 
     with col2:
-        st.subheader("Top Data Pain Points")
+        st.subheader("Real-World PAL Challenges")
 
-        # Issue frequency analysis
-        all_issues = []
-        for issues in pal_data['issues']:
-            all_issues.extend(issues)
+        # Real-world pain points from member feedback
+        real_pain_points = [
+            "Manual first-time setup (30+ plans)",
+            "Silent feed disconnections",
+            "Complex fund lineups (100+ funds)",
+            "No rollback capability",
+            "Provider data inconsistencies",
+            "Quarterly sync confusion",
+            "Missing error notifications",
+            "Blended fund lineups"
+        ]
 
-        issue_counts = pd.Series(all_issues).value_counts()
+        # Create pain points data
+        pain_points_data = pd.DataFrame({
+            'Challenge': real_pain_points,
+            'Impact_Score': [9, 8, 7, 8, 9, 6, 7, 6],  # Impact scores 1-10
+            'Frequency': ['High', 'Medium', 'High', 'Medium', 'High', 'Low', 'Medium', 'Medium']
+        })
+
+        # Show the challenges data
+        st.dataframe(pain_points_data, use_container_width=True)
 
     # Create the 4 graphs in a 2x2 grid
     col1, col2 = st.columns(2)
@@ -232,34 +247,51 @@ if st.session_state.demo_stage == 'intro':
         )
         st.plotly_chart(fig_time, use_container_width=True)
 
-        # Issue frequency chart
-        fig_issues = px.bar(
-            x=issue_counts.values,
-            y=issue_counts.index,
+        # Real-world challenges impact chart
+        fig_challenges = px.bar(
+            pain_points_data,
+            x='Impact_Score',
+            y='Challenge',
             orientation='h',
-            title="Most Common Data Issues",
-            color_discrete_sequence=['#E91E63']
+            color='Impact_Score',
+            title="Real-World PAL Challenge Impact",
+            color_continuous_scale=['#FF7043', '#E91E63', '#C2185B']
         )
-        fig_issues.update_layout(
-            xaxis_title="Frequency",
-            yaxis_title="Issue Type"
+        fig_challenges.update_layout(
+            xaxis_title="Impact Score (1-10)",
+            yaxis_title="Challenge Type",
+            height=400
         )
-        st.plotly_chart(fig_issues, use_container_width=True)
+        st.plotly_chart(fig_challenges, use_container_width=True)
 
     with col2:
-        # Data quality by provider
-        quality_by_provider = pal_data.groupby('provider')['data_quality_score'].mean().sort_values()
+        # Provider data quality issues (anonymized)
+        provider_issues = pd.DataFrame({
+            'Provider': ['Provider A', 'Provider B', 'Provider C', 'Provider D', 'Provider E', 'Provider F'],
+            'Data_Quality_Score': [45, 52, 78, 85, 92, 88],
+            'Common_Issues': [
+                'Incomplete feeds, complex lineups',
+                'Blended fund data, poor differentiation', 
+                'Format inconsistencies',
+                'Missing contract numbers',
+                'Standard format, reliable',
+                'Minor formatting issues'
+            ]
+        })
 
         fig_quality = px.bar(
-            x=quality_by_provider.values,
-            y=quality_by_provider.index,
+            provider_issues,
+            x='Data_Quality_Score',
+            y='Provider',
             orientation='h',
-            title="Data Quality Score by Provider",
-            color_discrete_sequence=['#FF7043']
+            color='Data_Quality_Score',
+            title="Data Quality by Provider (Anonymized)",
+            color_continuous_scale=['#FF7043', '#FFA726', '#FFC107', '#8BC34A', '#4CAF50']
         )
         fig_quality.update_layout(
-            xaxis_title="Average Quality Score",
-            yaxis_title="Provider"
+            xaxis_title="Data Quality Score",
+            yaxis_title="Provider",
+            height=300
         )
         st.plotly_chart(fig_quality, use_container_width=True)
 
@@ -277,16 +309,46 @@ if st.session_state.demo_stage == 'intro':
         )
         st.plotly_chart(fig_quality_dist, use_container_width=True)
 
-    # Show sample problematic data
-    st.subheader("Sample Problematic PAL Data")
+    # Show real-world problematic scenarios
+    st.subheader("Real-World Problematic Scenarios")
 
-    # Filter to show problematic records
-    problematic_data = pal_data[pal_data['data_quality_score'] < 70].head(10)
+    # Real-world problematic data examples
+    problematic_scenarios = pd.DataFrame({
+        'Scenario': [
+            'Complex Fund Lineup',
+            'Silent Feed Disconnection', 
+            'Blended Fund Data',
+            'Missing Contract Numbers',
+            'Quarterly Sync Confusion',
+            'Manual Setup Required'
+        ],
+        'Impact': [
+            '100+ funds, old funds included',
+            'No notification, 2-month delay',
+            'Cannot differentiate fund sources',
+            'Manual entry required',
+            'Premature saves, manual corrections',
+            '30+ plans need individual review'
+        ],
+        'Current_Resolution': [
+            'Manual fund mapping',
+            'Submit support ticket',
+            'Manual data separation',
+            'Manual contract lookup',
+            'Manual value corrections',
+            'One-by-one plan review'
+        ],
+        'Time_Impact': [
+            '4-6 hours',
+            '2+ months',
+            '2-3 hours',
+            '30-60 minutes',
+            '1-2 hours',
+            '2-3 days'
+        ]
+    })
 
-    st.dataframe(
-        problematic_data[['provider', 'contract_number', 'plan_name', 'data_quality_score', 'issues', 'processing_time_hours']],
-        use_container_width=True
-    )
+    st.dataframe(problematic_scenarios, use_container_width=True)
 
 elif st.session_state.demo_stage == 'pre_ingestion':
     st.markdown("""
@@ -571,6 +633,7 @@ elif st.session_state.demo_stage == 'post_ingestion':
         if st.button("Run AI Matching", type="primary"):
             with st.spinner("AI analyzing plan relationships..."):
                 time.sleep(2)
+                st.session_state.matching_complete = True
                 st.success("Matching complete!")
 
     with col2:
@@ -639,6 +702,83 @@ elif st.session_state.demo_stage == 'post_ingestion':
 
         st.info(f"AI reduced manual review from {len(fund_data)} to {len(review_funds)} funds ({len(review_funds)/len(fund_data)*100:.0f}% reduction)")
 
+    # Feed Management Intelligence
+    st.subheader("Feed Management Intelligence")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("#### Real-Time Feed Monitoring")
+        
+        # Feed status dashboard
+        feed_status = pd.DataFrame({
+            'Plan': ['ABC Corp 401(k)', 'XYZ Company Plan', 'DEF Industries', 'GHI Corp Plan'],
+            'Provider': ['Provider A', 'Provider B', 'Provider C', 'Provider D'],
+            'Status': ['Connected', 'Disconnected', 'Connected', 'Warning'],
+            'Last_Sync': ['2 min ago', '2 days ago', '5 min ago', '1 hour ago'],
+            'Data_Quality': ['99.2%', 'N/A', '98.8%', '87.3%']
+        })
+
+        # Color code by status
+        def color_feed_status(val):
+            if val == 'Connected':
+                return 'background-color: #d4edda'
+            elif val == 'Disconnected':
+                return 'background-color: #f8d7da'
+            elif val == 'Warning':
+                return 'background-color: #fff3cd'
+            else:
+                return ''
+
+        st.dataframe(
+            feed_status.style.applymap(color_feed_status, subset=['Status']),
+            use_container_width=True
+        )
+
+        # AI-powered alerts
+        st.markdown("#### AI-Powered Alerts")
+        st.success("✅ Feed disconnection detected for XYZ Company Plan")
+        st.warning("⚠️ Data quality drop detected for GHI Corp Plan")
+        st.info("ℹ️ New fund detected in ABC Corp 401(k)")
+
+    with col2:
+        st.markdown("#### One-Click Problem Resolution")
+        
+        # Resolution actions
+        resolution_actions = pd.DataFrame({
+            'Issue': [
+                'Feed Disconnection',
+                'Data Quality Drop',
+                'Missing Contract Numbers',
+                'Complex Fund Lineup',
+                'Quarterly Sync Error'
+            ],
+            'AI_Action': [
+                'Auto-reconnect + notify',
+                'Auto-correct + flag for review',
+                'Auto-lookup from provider',
+                'Auto-map + confidence score',
+                'Auto-rollback + resync'
+            ],
+            'Time_Saved': [
+                '2+ months',
+                '2-3 hours',
+                '30-60 minutes',
+                '4-6 hours',
+                '1-2 hours'
+            ]
+        })
+
+        st.dataframe(resolution_actions, use_container_width=True)
+
+        # Rollback capability demo
+        st.markdown("#### Smart Rollback Capability")
+        if st.button("Demo: Rollback to Previous Quarter", type="primary"):
+            with st.spinner("AI analyzing historical data..."):
+                time.sleep(2)
+                st.success("✅ Successfully rolled back to Q3 2024 data")
+                st.info("All 47 plans restored to previous quarter values")
+
     # Exception handling with AI insights
     st.subheader("Intelligent Exception Handling")
 
@@ -647,12 +787,13 @@ elif st.session_state.demo_stage == 'post_ingestion':
     with col1:
         st.markdown("""
         <div class="metric-card">
-            <h4>Anomaly Detection</h4>
-            <p>AI identified 3 unusual asset movements requiring attention</p>
+            <h4>Silent Disconnection Detection</h4>
+            <p>AI automatically detected and resolved:</p>
             <ul>
-                <li>Plan ABC: 45% asset increase</li>
-                <li>Plan XYZ: New fund addition</li>
-                <li>Plan DEF: Missing quarterly data</li>
+                <li>3 silent feed disconnections</li>
+                <li>2 data quality drops</li>
+                <li>1 missing contract number</li>
+                <li>Auto-notifications sent to advisors</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
@@ -660,12 +801,13 @@ elif st.session_state.demo_stage == 'post_ingestion':
     with col2:
         st.markdown("""
         <div class="metric-card">
-            <h4>Predictive Insights</h4>
-            <p>Based on historical patterns:</p>
+            <h4>Complex Fund Lineup Management</h4>
+            <p>AI intelligently handled:</p>
             <ul>
-                <li>Plan GHI: Likely fee structure change</li>
-                <li>Plan JKL: Probable fund lineup update</li>
-                <li>Plan MNO: Expected participant growth</li>
+                <li>100+ fund complex lineups</li>
+                <li>Blended fund data separation</li>
+                <li>Old fund identification & mapping</li>
+                <li>Confidence scoring for each fund</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
@@ -673,12 +815,13 @@ elif st.session_state.demo_stage == 'post_ingestion':
     with col3:
         st.markdown("""
         <div class="metric-card">
-            <h4>Auto-Resolution</h4>
-            <p>AI automatically handled:</p>
+            <h4>Smart Rollback & Recovery</h4>
+            <p>AI automatically managed:</p>
             <ul>
-                <li>12 minor data formatting issues</li>
-                <li>8 fund name standardizations</li>
-                <li>5 contract number corrections</li>
+                <li>Quarterly sync error prevention</li>
+                <li>One-click rollback to previous data</li>
+                <li>Manual correction elimination</li>
+                <li>Historical data preservation</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
