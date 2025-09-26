@@ -8,6 +8,7 @@ import time
 import random
 from datetime import datetime, timedelta
 import json
+import base64
 
 # Configure page
 st.set_page_config(
@@ -56,23 +57,106 @@ st.markdown("""
     .stProgress > div > div > div > div {
         background: linear-gradient(135deg, #4DD0E1 0%, #26C6DA 100%);
     }
+
+    /* Top spacing without constraining width */
+    div.block-container { padding-top: 1rem; }
+
+    /* Sleek top navigation container */
+    .top-nav {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: rgba(255, 255, 255, 0.7);
+        -webkit-backdrop-filter: saturate(180%) blur(12px);
+        backdrop-filter: saturate(180%) blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        border-radius: 12px;
+        padding: 0.5rem 0.75rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    }
+
+    /* Center and expand segmented control */
+    [data-testid="stSegmentedControl"] {
+        width: 100%;
+    }
+
+    [data-testid="stSegmentedControl"] > div {
+        justify-content: center;
+    }
+
+    /* Make segment pills rounded and modern */
+    [data-testid="stSegmentedControl"] button {
+        border-radius: 999px !important;
+        padding: 0.5rem 1rem !important;
+    }
+
+    /* Comparison cards for Before vs After */
+    .compare-wrapper {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .compare-card {
+        border-radius: 12px;
+        color: #fff;
+        padding: 1.25rem 1.5rem;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+    }
+    .compare-card.current {
+        background: linear-gradient(135deg, #FF7043 0%, #E91E63 100%);
+    }
+    .compare-card.future {
+        background: linear-gradient(135deg, #4DD0E1 0%, #1E3A8A 100%);
+    }
+    .compare-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin: 0 0 .5rem 0;
+    }
+    .compare-divider {
+        height: 1px;
+        background: rgba(255,255,255,0.25);
+        margin: .5rem 0 1rem;
+    }
+    .compare-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: .75rem;
+        padding: .4rem 0;
+    }
+    .compare-label { opacity: .95; }
+    .compare-value { font-weight: 700; }
 </style>
 """, unsafe_allow_html=True)
 
-# Title with RPAG branding
-st.markdown("""
-<div class="main-header">
+# Title with RPAG branding (logo embedded)
+logo_img_tag = ""
+try:
+    with open("rpaglogo.jpg", "rb") as _logo_f:
+        _logo_b64 = base64.b64encode(_logo_f.read()).decode()
+        logo_img_tag = f'<img src="data:image/jpeg;base64,{_logo_b64}" alt="RPAG Logo" style="height:60px;margin-bottom:12px;border-radius:6px;" />'
+except Exception:
+    pass
+
+header_html = f"""
+<div class=\"main-header\">{logo_img_tag}
     <h1>Data, AI, and PAL</h1>
     <h2>Now and in The Future</h2>
-    <p style="font-size: 1.2em; opacity: 0.9;">Powering Your Growth Through Innovation</p>
+    <p style=\"font-size: 1.2em; opacity: 0.9;\">Powering Your Growth Through Innovation</p>
 </div>
-""", unsafe_allow_html=True)
+"""
+st.markdown(header_html, unsafe_allow_html=True)
 
 # Initialize session state
 if 'demo_stage' not in st.session_state:
     st.session_state.demo_stage = 'intro'
 if 'uploaded_data' not in st.session_state:
     st.session_state.uploaded_data = None
+if 'demo_nav' not in st.session_state:
+    st.session_state.demo_nav = st.session_state.demo_stage
 
 # Demo navigation
 demo_stages = {
@@ -82,14 +166,32 @@ demo_stages = {
     'future': "Building Your Data Backbone"
 }
 
-# Sidebar navigation
-st.sidebar.title("Navigation")
-selected_stage = st.sidebar.radio(
-    "Choose Demo Section:",
-    list(demo_stages.keys()),
-    format_func=lambda x: demo_stages[x],
-    key="demo_nav"
-)
+# Sleek top navigation (with safe sidebar fallback)
+demo_stage_labels = {
+    'intro': 'Challenge',
+    'pre_ingestion': 'Pre-Ingestion',
+    'post_ingestion': 'Post-Ingestion',
+    'future': 'Future'
+}
+
+with st.container():
+    st.markdown('<div class="top-nav">', unsafe_allow_html=True)
+    if hasattr(st, "segmented_control"):
+        selected_stage = st.segmented_control(
+            "",
+            options=list(demo_stages.keys()),
+            format_func=lambda x: demo_stage_labels.get(x, x),
+            key="demo_nav"
+        )
+    else:
+        st.sidebar.title("Navigation")
+        selected_stage = st.sidebar.radio(
+            "Choose Demo Section:",
+            list(demo_stages.keys()),
+            format_func=lambda x: demo_stages[x],
+            key="demo_nav"
+        )
+    st.markdown('</div>', unsafe_allow_html=True)
 
 st.session_state.demo_stage = selected_stage
 
@@ -179,36 +281,63 @@ def generate_fund_mapping_data():
 
 # Main demo content
 if st.session_state.demo_stage == 'intro':
-    st.markdown("""
-    <div class="pain-point-card">
-        <h2>The Real PAL Challenges</h2>
-        <p><em>"We allocate multiple hours to get through our quarterly data, and that's just the beginning..."</em></p>
-        <p>- RPAG Member Survey Response</p>
-    </div>
-    """, unsafe_allow_html=True)
-
     # Load mock data
     pal_data = generate_mock_pal_data()
 
-    # Create a 2x2 grid layout for the 4 graphs
-    col1, col2 = st.columns(2)
+    tabs = st.tabs(["Overview", "Challenges", "Scenarios"])
 
-    with col1:
-        st.subheader("Current PAL Processing Reality")
+    with tabs[0]:
+        st.markdown("""
+        <div class="pain-point-card">
+            <h2>The Real PAL Challenges</h2>
+            <p><em>"We allocate multiple hours to get through our quarterly data, and that's just the beginning..."</em></p>
+            <p>- RPAG Member Survey Response</p>
+        </div>
+        """, unsafe_allow_html=True)
 
-        # Key metrics
+        # KPI metrics
+        col_kpi_1, col_kpi_2, col_kpi_3 = st.columns(3)
         total_templates = len(pal_data['template_type'].unique()) * 50  # Simulate 400+ templates
         avg_processing_time = pal_data['processing_time_hours'].mean()
         low_quality_pct = (pal_data['data_quality_score'] < 70).mean() * 100
 
-        st.metric("Total PAL Templates", f"{total_templates}+")
-        st.metric("Avg Processing Time", f"{avg_processing_time:.1f} hours")
-        st.metric("Data Quality Issues", f"{low_quality_pct:.0f}%")
+        with col_kpi_1:
+            st.metric("Total PAL Templates", f"{total_templates}+")
+        with col_kpi_2:
+            st.metric("Avg Processing Time", f"{avg_processing_time:.1f} hours")
+        with col_kpi_3:
+            st.metric("Data Quality Issues", f"{low_quality_pct:.0f}%")
 
-    with col2:
+        col_a, col_b = st.columns(2)
+        with col_a:
+            fig_time = px.histogram(
+                pal_data,
+                x='processing_time_hours',
+                title="PAL Processing Time Distribution",
+                color_discrete_sequence=['#FF7043']
+            )
+            fig_time.update_layout(
+                xaxis_title="Hours to Process",
+                yaxis_title="Number of Plans"
+            )
+            st.plotly_chart(fig_time, use_container_width=True)
+
+        with col_b:
+            fig_quality_dist = px.histogram(
+                pal_data,
+                x='data_quality_score',
+                title="Data Quality Score Distribution",
+                color_discrete_sequence=['#26C6DA'],
+                nbins=20
+            )
+            fig_quality_dist.update_layout(
+                xaxis_title="Quality Score",
+                yaxis_title="Number of Plans"
+            )
+            st.plotly_chart(fig_quality_dist, use_container_width=True)
+
+    with tabs[1]:
         st.subheader("Real-World PAL Challenges")
-
-        # Real-world pain points from member feedback
         real_pain_points = [
             "Manual first-time setup (30+ plans)",
             "Silent feed disconnections",
@@ -220,135 +349,100 @@ if st.session_state.demo_stage == 'intro':
             "Blended fund lineups"
         ]
 
-        # Create pain points data
         pain_points_data = pd.DataFrame({
             'Challenge': real_pain_points,
-            'Impact_Score': [9, 8, 7, 8, 9, 6, 7, 6],  # Impact scores 1-10
+            'Impact_Score': [9, 8, 7, 8, 9, 6, 7, 6],
             'Frequency': ['High', 'Medium', 'High', 'Medium', 'High', 'Low', 'Medium', 'Medium']
         })
 
-        # Show the challenges data
-        st.dataframe(pain_points_data, use_container_width=True)
+        col_left, col_right = st.columns(2)
+        with col_left:
+            st.dataframe(pain_points_data, use_container_width=True)
 
-    # Create the 4 graphs in a 2x2 grid
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        # Processing time distribution
-        fig_time = px.histogram(
-            pal_data,
-            x='processing_time_hours',
-            title="PAL Processing Time Distribution",
-            color_discrete_sequence=['#FF7043']
-        )
-        fig_time.update_layout(
-            xaxis_title="Hours to Process",
-            yaxis_title="Number of Plans"
-        )
-        st.plotly_chart(fig_time, use_container_width=True)
+            fig_challenges = px.bar(
+                pain_points_data,
+                x='Impact_Score',
+                y='Challenge',
+                orientation='h',
+                color='Impact_Score',
+                title="Challenge Impact",
+                color_continuous_scale=['#FF7043', '#E91E63', '#C2185B']
+            )
+            fig_challenges.update_layout(
+                xaxis_title="Impact Score (1-10)",
+                yaxis_title="Challenge Type",
+                height=400
+            )
+            st.plotly_chart(fig_challenges, use_container_width=True)
 
-        # Real-world challenges impact chart
-        fig_challenges = px.bar(
-            pain_points_data,
-            x='Impact_Score',
-            y='Challenge',
-            orientation='h',
-            color='Impact_Score',
-            title="Real-World PAL Challenge Impact",
-            color_continuous_scale=['#FF7043', '#E91E63', '#C2185B']
-        )
-        fig_challenges.update_layout(
-            xaxis_title="Impact Score (1-10)",
-            yaxis_title="Challenge Type",
-            height=400
-        )
-        st.plotly_chart(fig_challenges, use_container_width=True)
+        with col_right:
+            provider_issues = pd.DataFrame({
+                'Provider': ['Provider A', 'Provider B', 'Provider C', 'Provider D', 'Provider E', 'Provider F'],
+                'Data_Quality_Score': [45, 52, 78, 85, 92, 88],
+                'Common_Issues': [
+                    'Incomplete feeds, complex lineups',
+                    'Blended fund data, poor differentiation', 
+                    'Format inconsistencies',
+                    'Missing contract numbers',
+                    'Standard format, reliable',
+                    'Minor formatting issues'
+                ]
+            })
 
-    with col2:
-        # Provider data quality issues (anonymized)
-        provider_issues = pd.DataFrame({
-            'Provider': ['Provider A', 'Provider B', 'Provider C', 'Provider D', 'Provider E', 'Provider F'],
-            'Data_Quality_Score': [45, 52, 78, 85, 92, 88],
-            'Common_Issues': [
-                'Incomplete feeds, complex lineups',
-                'Blended fund data, poor differentiation', 
-                'Format inconsistencies',
-                'Missing contract numbers',
-                'Standard format, reliable',
-                'Minor formatting issues'
+            fig_quality = px.bar(
+                provider_issues,
+                x='Data_Quality_Score',
+                y='Provider',
+                orientation='h',
+                color='Data_Quality_Score',
+                title="Data Quality by Provider (Anonymized)",
+                color_continuous_scale=['#FF7043', '#FFA726', '#FFC107', '#8BC34A', '#4CAF50']
+            )
+            fig_quality.update_layout(
+                xaxis_title="Data Quality Score",
+                yaxis_title="Provider",
+                height=300
+            )
+            st.plotly_chart(fig_quality, use_container_width=True)
+
+    with tabs[2]:
+        st.subheader("Real-World Problematic Scenarios")
+        problematic_scenarios = pd.DataFrame({
+            'Scenario': [
+                'Complex Fund Lineup',
+                'Silent Feed Disconnection', 
+                'Blended Fund Data',
+                'Missing Contract Numbers',
+                'Quarterly Sync Confusion',
+                'Manual Setup Required'
+            ],
+            'Impact': [
+                '100+ funds, old funds included',
+                'No notification, 2-month delay',
+                'Cannot differentiate fund sources',
+                'Manual entry required',
+                'Premature saves, manual corrections',
+                '30+ plans need individual review'
+            ],
+            'Current_Resolution': [
+                'Manual fund mapping',
+                'Submit support ticket',
+                'Manual data separation',
+                'Manual contract lookup',
+                'Manual value corrections',
+                'One-by-one plan review'
+            ],
+            'Time_Impact': [
+                '4-6 hours',
+                '2+ months',
+                '2-3 hours',
+                '30-60 minutes',
+                '1-2 hours',
+                '2-3 days'
             ]
         })
 
-        fig_quality = px.bar(
-            provider_issues,
-            x='Data_Quality_Score',
-            y='Provider',
-            orientation='h',
-            color='Data_Quality_Score',
-            title="Data Quality by Provider (Anonymized)",
-            color_continuous_scale=['#FF7043', '#FFA726', '#FFC107', '#8BC34A', '#4CAF50']
-        )
-        fig_quality.update_layout(
-            xaxis_title="Data Quality Score",
-            yaxis_title="Provider",
-            height=300
-        )
-        st.plotly_chart(fig_quality, use_container_width=True)
-
-        # Add a fourth chart for balance - data quality distribution
-        fig_quality_dist = px.histogram(
-            pal_data,
-            x='data_quality_score',
-            title="Data Quality Score Distribution",
-            color_discrete_sequence=['#26C6DA'],
-            nbins=20
-        )
-        fig_quality_dist.update_layout(
-            xaxis_title="Quality Score",
-            yaxis_title="Number of Plans"
-        )
-        st.plotly_chart(fig_quality_dist, use_container_width=True)
-
-    # Show real-world problematic scenarios
-    st.subheader("Real-World Problematic Scenarios")
-
-    # Real-world problematic data examples
-    problematic_scenarios = pd.DataFrame({
-        'Scenario': [
-            'Complex Fund Lineup',
-            'Silent Feed Disconnection', 
-            'Blended Fund Data',
-            'Missing Contract Numbers',
-            'Quarterly Sync Confusion',
-            'Manual Setup Required'
-        ],
-        'Impact': [
-            '100+ funds, old funds included',
-            'No notification, 2-month delay',
-            'Cannot differentiate fund sources',
-            'Manual entry required',
-            'Premature saves, manual corrections',
-            '30+ plans need individual review'
-        ],
-        'Current_Resolution': [
-            'Manual fund mapping',
-            'Submit support ticket',
-            'Manual data separation',
-            'Manual contract lookup',
-            'Manual value corrections',
-            'One-by-one plan review'
-        ],
-        'Time_Impact': [
-            '4-6 hours',
-            '2+ months',
-            '2-3 hours',
-            '30-60 minutes',
-            '1-2 hours',
-            '2-3 days'
-        ]
-    })
-
-    st.dataframe(problematic_scenarios, use_container_width=True)
+        st.dataframe(problematic_scenarios, use_container_width=True)
 
 elif st.session_state.demo_stage == 'pre_ingestion':
     st.markdown("""
@@ -837,35 +931,31 @@ else:  # future stage
     # ROI Comparison
     st.subheader("The Transformation: Before vs After AI")
 
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.markdown("#### Current State (Manual Process)")
-
-        current_metrics = {
-            'Processing Time': '6.5 hours avg',
-            'Data Quality Score': '68%',
-            'Manual Review Required': '89%',
-            'Exception Resolution': '2.3 hours avg',
-            'Quarterly Processing': '2-3 business days'
-        }
-
-        for metric, value in current_metrics.items():
-            st.markdown(f"**{metric}:** {value}")
-
-    with col2:
-        st.markdown("#### AI-Powered Future")
-
-        future_metrics = {
-            'Processing Time': '15 minutes avg',
-            'Data Quality Score': '94%',
-            'Manual Review Required': '12%',
-            'Exception Resolution': '5 minutes avg',
-            'Quarterly Processing': '2 hours'
-        }
-
-        for metric, value in future_metrics.items():
-            st.markdown(f"**{metric}:** {value}")
+    st.markdown(
+        """
+        <div class="compare-wrapper">
+            <div class="compare-card current">
+                <div class="compare-title">Current State (Manual Process)</div>
+                <div class="compare-divider"></div>
+                <div class="compare-item"><span class="compare-label">Processing Time</span><span class="compare-value">6.5 hours avg</span></div>
+                <div class="compare-item"><span class="compare-label">Data Quality Score</span><span class="compare-value">68%</span></div>
+                <div class="compare-item"><span class="compare-label">Manual Review Required</span><span class="compare-value">89%</span></div>
+                <div class="compare-item"><span class="compare-label">Exception Resolution</span><span class="compare-value">2.3 hours avg</span></div>
+                <div class="compare-item"><span class="compare-label">Quarterly Processing</span><span class="compare-value">2-3 business days</span></div>
+            </div>
+            <div class="compare-card future">
+                <div class="compare-title">AI-Powered Future</div>
+                <div class="compare-divider"></div>
+                <div class="compare-item"><span class="compare-label">Processing Time</span><span class="compare-value">15 minutes avg</span></div>
+                <div class="compare-item"><span class="compare-label">Data Quality Score</span><span class="compare-value">94%</span></div>
+                <div class="compare-item"><span class="compare-label">Manual Review Required</span><span class="compare-value">12%</span></div>
+                <div class="compare-item"><span class="compare-label">Exception Resolution</span><span class="compare-value">5 minutes avg</span></div>
+                <div class="compare-item"><span class="compare-label">Quarterly Processing</span><span class="compare-value">2 hours</span></div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     # Visual impact
     st.subheader("Impact Visualization")
