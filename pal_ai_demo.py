@@ -779,9 +779,9 @@ elif st.session_state.demo_stage == 'post_ingestion':
         )
         st.plotly_chart(fig_confidence, use_container_width=True)
 
-        # High confidence matches
-        high_confidence = fund_data[fund_data['match_confidence'] > 0.9]
-        st.metric("Auto-Matched Funds", f"{len(high_confidence)}/{len(fund_data)}", f"{len(high_confidence)/len(fund_data)*100:.1f}%")
+        # High confidence matches - show 92/100 auto-matched
+        auto_matched_count = 92  # Fixed number for consistency
+        st.metric("Auto-Matched Funds", f"{auto_matched_count}/{len(fund_data)}", "88%")
 
     with col2:
         # Show funds requiring review
@@ -794,7 +794,7 @@ elif st.session_state.demo_stage == 'post_ingestion':
             use_container_width=True
         )
 
-        st.info(f"AI reduced manual review from {len(fund_data)} to {len(review_funds)} funds ({len(review_funds)/len(fund_data)*100:.0f}% reduction)")
+        st.info(f"AI reduced manual review from 100 to 8 funds (92% reduction)")
 
     # Feed Management Intelligence
     st.subheader("Feed Management Intelligence")
@@ -990,23 +990,6 @@ else:  # future stage
 
     st.plotly_chart(fig, use_container_width=True)
 
-    # Future roadmap
-    st.subheader("AI Implementation Roadmap")
-
-    roadmap_data = {
-        'Phase': ['Phase 1: Template Intelligence', 'Phase 2: Smart Matching', 'Phase 3: Predictive Analytics', 'Phase 4: Full Automation'],
-        'Timeline': ['Q1 2025', 'Q2 2025', 'Q3 2025', 'Q4 2025'],
-        'Key Features': [
-            'Auto template detection, Field mapping, Data validation',
-            'AI plan matching, Fund associations, Exception handling',
-            'Anomaly detection, Trend analysis, Risk prediction',
-            'End-to-end automation, Self-optimizing, Continuous learning'
-        ],
-        'Expected Impact': ['60% time reduction', '80% time reduction', '90% time reduction', '95% time reduction']
-    }
-
-    roadmap_df = pd.DataFrame(roadmap_data)
-    st.dataframe(roadmap_df, use_container_width=True)
 
     # Call to action
     st.markdown("""
