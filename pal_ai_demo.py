@@ -47,11 +47,12 @@ st.markdown("""
     }
 
     .metric-card {
-        background: white;
+        background: rgba(255,255,255,0.04);
         padding: 1rem;
         border-radius: 8px;
         border-left: 4px solid #FF7043;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+        color: #e5e7eb;
     }
 
     .stProgress > div > div > div > div {
@@ -66,14 +67,15 @@ st.markdown("""
         position: sticky;
         top: 0;
         z-index: 50;
-        background: rgba(255, 255, 255, 0.7);
+        background: rgba(15, 23, 42, 0.75);
         -webkit-backdrop-filter: saturate(180%) blur(12px);
         backdrop-filter: saturate(180%) blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: 12px;
         padding: 0.5rem 0.75rem;
         margin-bottom: 1rem;
-        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        color: #e5e7eb;
     }
 
     /* Center and expand segmented control */
@@ -601,10 +603,11 @@ elif st.session_state.demo_stage == 'pre_ingestion':
                 )
             else:
                 def color_status(val):
+                    # Dark-friendly tints with readable text
                     if val == 'Live':
-                        return 'background-color: #d4edda'
+                        return 'background-color: rgba(16,185,129,0.22); color: #e5e7eb;'
                     else:
-                        return 'background-color: #f8d7da'
+                        return 'background-color: rgba(239,68,68,0.22); color: #e5e7eb;'
 
                 st.dataframe(
                     template_results.style.applymap(color_status, subset=['Sync Status']),
@@ -741,14 +744,15 @@ elif st.session_state.demo_stage == 'post_ingestion':
                 'Action': ['Auto-Sync', 'Review Required', 'Auto-Sync', 'Manual Setup']
             })
 
-            # Color code by confidence
+            # Color code by confidence (dark-friendly)
             def color_matching(row):
                 if row['Confidence'] > 90:
-                    return ['background-color: #d4edda'] * len(row)
+                    bg = 'rgba(16,185,129,0.18)'
                 elif row['Confidence'] > 80:
-                    return ['background-color: #fff3cd'] * len(row)
+                    bg = 'rgba(234,179,8,0.20)'
                 else:
-                    return ['background-color: #f8d7da'] * len(row)
+                    bg = 'rgba(239,68,68,0.20)'
+                return [f'background-color: {bg}; color: #e5e7eb;'] * len(row)
 
             st.dataframe(
                 matching_results.style.apply(color_matching, axis=1),
@@ -813,14 +817,14 @@ elif st.session_state.demo_stage == 'post_ingestion':
             'Data_Quality': ['99.2%', 'N/A', '98.8%', '87.3%']
         })
 
-        # Color code by status
+        # Color code by status (dark-friendly)
         def color_feed_status(val):
             if val == 'Connected':
-                return 'background-color: #d4edda'
+                return 'background-color: rgba(16,185,129,0.20); color: #e5e7eb;'
             elif val == 'Disconnected':
-                return 'background-color: #f8d7da'
+                return 'background-color: rgba(239,68,68,0.22); color: #e5e7eb;'
             elif val == 'Warning':
-                return 'background-color: #fff3cd'
+                return 'background-color: rgba(234,179,8,0.22); color: #0b0b0b;'
             else:
                 return ''
 
@@ -1025,4 +1029,5 @@ st.markdown("---")
 col1, col2, col3 = st.columns([1, 2, 1])
 
 with col2:
+
     st.markdown(f"<center><strong>{demo_stages[selected_stage]}</strong></center>", unsafe_allow_html=True)
