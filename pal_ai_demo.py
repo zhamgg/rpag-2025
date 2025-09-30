@@ -874,7 +874,7 @@ elif st.session_state.demo_stage == 'post_ingestion':
         if st.button("Demo: Rollback to Previous Quarter", type="primary"):
             with st.spinner("AI analyzing historical data..."):
                 time.sleep(2)
-                st.success("✅ Successfully rolled back to Q3 2024 data")
+                st.success("✅ Successfully rolled back to Q2 2025 data")
                 st.info("All 47 plans restored to previous quarter values")
 
     # Exception handling with AI insights
@@ -1031,3 +1031,4 @@ col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
 
     st.markdown(f"<center><strong>{demo_stages[selected_stage]}</strong></center>", unsafe_allow_html=True)
+
